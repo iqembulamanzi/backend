@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>All Users</title>
+</head>
+<body>
+    <h1>All Users</h1>
+    <a href="user_form.html">Add New User</a>
+    <div id="error"></div>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody id="usersBody">
+            <tr><td colspan="5">Loading...</td></tr>
+        </tbody>
+    </table>
+
+    <script>
+        fetch('/users')
+            .then(response => response.json())
+            .then(users => {
+                const tbody = document.getElementById('usersBody');
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">No users</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.userId || user._id}</td>
+                        <td>${user.first_name}</td>
+                        <td>${user.last_name}</td>
+                        <td>${user.email}</td>
+                        <td>${user.phone || 'N/A'}</td>
+                        <td>${user.role || 'Guardian'}</td>
+                        <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}</td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                document.getElementById('error').innerHTML = 'Error loading users: ' + error;
+            });
+    </script>
+</body>
+</html>

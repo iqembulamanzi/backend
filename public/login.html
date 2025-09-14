@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <form id="loginForm">
+        <label>Email: <input type="email" name="email" required></label><br><br>
+        <label>Password: <input type="password" name="password" required></label><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <div id="message" style="display: none; margin-top: 10px;"></div>
+    <a href="user_form.html">Register New User</a>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const messageDiv = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const responseText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch {
+                    throw new Error('Invalid response');
+                }
+
+                if (result.success) {
+                    messageDiv.style.color = 'green';
+                    messageDiv.innerHTML = `<p>${result.message}</p><p>User: ${result.user.email} (Role: ${result.user.role})</p>`;
+                } else {
+                    messageDiv.style.color = 'red';
+                    messageDiv.innerHTML = `<p>${result.message}</p>`;
+                }
+            } catch (error) {
+                messageDiv.style.color = 'red';
+                messageDiv.innerHTML = '<p>Login error. Try again.</p>';
+            }
+
+            messageDiv.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
