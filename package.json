@@ -1,7 +1,7 @@
 {
-  "name": "node_js_tutorial",
+  "name": "iqembu-lamanzi",
   "version": "1.0.0",
-  "description": "learning node_js",
+  "description": "iqembu lamanzi - Sewer monitoring and notification system",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
