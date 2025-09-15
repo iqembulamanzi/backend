@@ -31,6 +31,37 @@ class UserValidator {
     return null;
   }
 
+  _validateAddress(address) {
+    if (address && address.trim().length > 0) {
+      if (address.trim().length < 5) {
+        return 'Address must be at least 5 characters long.';
+      }
+    }
+    return null;
+  }
+
+  _validateLat(lat) {
+    if (!lat) {
+      return 'Latitude is required.';
+    }
+    const latNum = parseFloat(lat);
+    if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+      return 'Latitude must be a number between -90 and 90.';
+    }
+    return null;
+  }
+
+  _validateLng(lng) {
+    if (!lng) {
+      return 'Longitude is required.';
+    }
+    const lngNum = parseFloat(lng);
+    if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+      return 'Longitude must be a number between -180 and 180.';
+    }
+    return null;
+  }
+
   validate(body, context = 'register') {
     const errors = [];
 
@@ -54,6 +85,15 @@ class UserValidator {
         }
         phoneError = this._validatePhone(body.phone);
         if (phoneError) errors.push(phoneError);
+
+        const addressError = this._validateAddress(body.address);
+        if (addressError) errors.push(addressError);
+
+        const latError = this._validateLat(body.lat);
+        if (latError) errors.push(latError);
+
+        const lngError = this._validateLng(body.lng);
+        if (lngError) errors.push(lngError);
         break;
 
       case 'login':

@@ -2,6 +2,8 @@
 <html>
 <head>
     <title>Register User</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
     <h1>Register User</h1>
@@ -10,6 +12,11 @@
         Last Name: <input type="text" name="last_name" required><br>
         Email: <input type="email" name="email" required><br>
         Phone: <input type="tel" name="phone" required><br>
+        Address (optional): <textarea name="address" rows="3" cols="30"></textarea><br>
+        <div id="map" style="height: 300px; border: 1px solid #ccc; margin: 10px 0;"></div>
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+        <p>Click on the map to select your location.</p>
         Password: <input type="password" name="password" required><br>
         Role: <select name="role">
             <option value="Guardian" selected>Guardian</option>
@@ -21,10 +28,35 @@
     <div id="message"></div>
 
     <script>
+        // Initialize map after DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            window.map = L.map('map').setView([-26.2041, 28.0473], 10); // Default to Johannesburg
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            let marker;
+            map.on('click', function(e) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker(e.latlng).addTo(map);
+                document.getElementById('lat').value = e.latlng.lat.toFixed(6);
+                document.getElementById('lng').value = e.latlng.lng.toFixed(6);
+                console.log('Selected location:', e.latlng.lat, e.latlng.lng);
+            });
+        });
+
         document.getElementById('userForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
+
+            // Check if location selected
+            if (!data.lat || !data.lng) {
+                alert('Please select your location on the map.');
+                return;
+            }
 
             try {
                 const response = await fetch('/submit', {
@@ -48,6 +80,16 @@
                 const message = document.getElementById('message');
                 if (result.success) {
                     e.target.reset();
+                    // Reset map
+                    if (window.map) {
+                        window.map.eachLayer(function(layer) {
+                            if (layer instanceof L.Marker) {
+                                window.map.removeLayer(layer);
+                            }
+                        });
+                    }
+                    document.getElementById('lat').value = '';
+                    document.getElementById('lng').value = '';
                     message.innerHTML = `<p style="color: green;">${result.message}</p>`;
                 } else {
                     message.innerHTML = `<p style="color: red;">${result.message || 'Unknown error occurred'}</p>`;

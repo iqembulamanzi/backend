@@ -1,7 +1,10 @@
+const User = require('../models/User');
 const UserValidator = require('../validators/userValidator');
 const UserService = require('../services/userService');
 const validator = new UserValidator();
 const userService = new UserService();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.submitUser = async (req, res) => {
   console.log('Received submit request with status 200 (initial):', req.method, req.url); // Log request arrival
@@ -11,8 +14,8 @@ exports.submitUser = async (req, res) => {
       console.log('Validation failed with status 400:', errors); // Log validation failure
       return res.status(400).json({ success: false, message: errors.join(' ') });
     }
-    const { first_name, last_name, email, phone, password, role } = req.body;
-    const userData = { first_name, last_name, email, phone, password, role };
+    const { first_name, last_name, email, phone, password, role, address, lat, lng } = req.body;
+    const userData = { first_name, last_name, email, phone, password, role, address, lat, lng };
     const serviceResult = await userService.createUser(userData);
     console.log('User created successfully with status 201:', { id: serviceResult.savedUser._id, role: serviceResult.role, email: req.body.email }); // Log success
     res.status(201).json({ success: true, message: `Welcome, ${first_name}! Your account has been created with role: ${serviceResult.role}.` });
@@ -47,14 +50,28 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ success: false, message: errors.join(' ') });
     }
     const { email, password } = req.body;
-    // Basic check - in real app, use bcrypt.compare and JWT
     const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
+    if (!user) {
       console.log('Invalid login attempt with status 401 for email:', req.body.email); // Log failed login
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log('Invalid login attempt with status 401 for email:', req.body.email); // Log failed login
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+    }
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, role: user.role },
+      'secret_key',
+      { expiresIn: '24h' }
+    );
     console.log('Login successful with status 200 for email:', req.body.email); // Log successful login
-    res.status(200).json({ success: true, message: 'Login successful.', user: { id: user._id, email: user.email, role: user.role } });
+    res.status(200).json({
+      success: true,
+      message: 'Login successful.',
+      token,
+      user: { id: user._id, email: user.email, role: user.role }
+    });
   } catch (error) {
     console.error('Error in loginUser with status 500:', error.message);
     res.status(500).json({ success: false, message: 'Error during login: ' + error.message });
