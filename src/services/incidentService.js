@@ -5,6 +5,43 @@ const twilio = require('twilio');
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 class IncidentService {
+  async findMatchingIncident(location, description) {
+    try {
+      return await Incident.aggregate([
+        {
+          $geoNear: {
+            near: { type: 'Point', coordinates: location.coordinates },
+            distanceField: 'dist.calculated',
+            maxDistance: 10,  // 10 meters
+            spherical: true
+          }
+        },
+        {
+          $match: {
+            status: { $in: ['open', 'in_progress', 'allocated', 'verified'] }
+          }
+        },
+        {
+          $addFields: {
+            similarityScore: {
+              $cond: {
+                if: { $regexMatch: { input: '$description', regex: new RegExp(description, 'i') } },
+                then: 1,
+                else: 0
+              }
+            }
+          }
+        },
+        { $sort: { similarityScore: -1, createdAt: -1 } },
+        { $limit: 1 },
+        { $project: { dist: 0 } }
+      ]);
+    } catch (err) {
+      console.error('Error in findMatchingIncident:', err.message);
+      return [];
+    }
+  }
+
   async assignGuardian(incidentId) {
     try {
       const incident = await Incident.findById(incidentId).populate('guardianAssigned');
@@ -90,40 +127,69 @@ class IncidentService {
       }
       console.log('Triage priority:', priority);
 
-      // Find or create reporter user (basic, link by phone)
-      let reporter = await User.findOne({ phone: incidentData.reporterPhone });
-      if (!reporter) {
-        // For now, create as Guardian or skip; in full, prompt registration
-        reporter = null;
+      const location = incidentData.location || { type: 'Point', coordinates: [0, 0] };
+
+      let isNew = true;
+      let incident;
+
+      // Check for matching incident
+      const matchingIncidents = await this.findMatchingIncident(location, description);
+      if (matchingIncidents.length > 0) {
+        const existingIncident = await Incident.findById(matchingIncidents[0]._id);
+        if (existingIncident) {
+          // Append reporter
+          existingIncident.reporters.push({
+            phone: incidentData.reporterPhone,
+            reportedAt: new Date(),
+            description: incidentData.description
+          });
+          existingIncident.updatedAt = new Date();
+          incident = await existingIncident.save();
+          isNew = false;
+          console.log('Appended reporter to existing incident:', incident._id);
+        }
       }
 
-      // Create incident
-      const incident = new Incident({
-        reporterPhone: incidentData.reporterPhone,
-        description: incidentData.description,
-        category: incidentData.category || 'other',
-        priority,
-        location: incidentData.location || { type: 'Point', coordinates: [0, 0] },
-        mediaUrls: incidentData.mediaUrls || [],
-        guardianAssigned: null
-      });
+      if (isNew) {
+        // No match, create new
+        // Find or create reporter user (basic, link by phone)
+        let reporter = await User.findOne({ phone: incidentData.reporterPhone });
+        if (!reporter) {
+          // For now, create as Guardian or skip; in full, prompt registration
+          reporter = null;
+        }
 
-      console.log('New incident object before save:', incident.toObject());
+        const newIncident = new Incident({
+          reporters: [{
+            phone: incidentData.reporterPhone,
+            reportedAt: new Date(),
+            description: incidentData.description
+          }],
+          category: incidentData.category || 'other',
+          priority,
+          location,
+          mediaUrls: incidentData.mediaUrls || [],
+          guardianAssigned: null,
+          verifiedBy: null
+        });
 
-      const savedIncident = await incident.save();
-      console.log('Saved incident ID:', savedIncident._id, 'full object:', savedIncident.toObject());
+        console.log('New incident object before save:', newIncident.toObject());
 
-      // Estimate sewage loss (basic: P0 = 500L, P1 = 200L, P2 = 50L)
-      savedIncident.sewageLossEstimate = priority === 'P0' ? 500 : priority === 'P1' ? 200 : 50;
-      await savedIncident.save();
-      console.log('Updated saved incident with estimate:', savedIncident.toObject());
+        incident = await newIncident.save();
+        console.log('Saved new incident ID:', incident._id, 'full object:', incident.toObject());
 
-      // Assign guardian if location is set
-      if (savedIncident.location.coordinates[0] !== 0 || savedIncident.location.coordinates[1] !== 0) {
-        await this.assignGuardian(savedIncident._id);
+        // Estimate sewage loss (basic: P0 = 500L, P1 = 200L, P2 = 50L)
+        incident.sewageLossEstimate = priority === 'P0' ? 500 : priority === 'P1' ? 200 : 50;
+        await incident.save();
+        console.log('Updated new incident with estimate:', incident.toObject());
+
+        // Assign guardian if location is set
+        if (incident.location.coordinates[0] !== 0 || incident.location.coordinates[1] !== 0) {
+          await this.assignGuardian(incident._id);
+        }
       }
 
-      return savedIncident;
+      return { incident, isNew };
     } catch (err) {
       console.error('Error in createIncident:', err.message);
       console.error('Full error:', err);
@@ -158,6 +224,46 @@ class IncidentService {
     } catch (err) {
       console.error('Error in updateIncident:', err.message);
       throw err;
+    }
+  }
+
+  async findOpenIncidentByReporter(phone) {
+    try {
+      const incidents = await Incident.aggregate([
+        {
+          $unwind: '$reporters'
+        },
+        {
+          $match: {
+            'reporters.phone': phone,
+            status: { $in: ['open', 'in_progress', 'allocated', 'verified'] }
+          }
+        },
+        {
+          $sort: { 'reporters.reportedAt': -1 }
+        },
+        {
+          $limit: 1
+        },
+        {
+          $lookup: {
+            from: 'incidents',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'fullIncident'
+          }
+        },
+        {
+          $unwind: '$fullIncident'
+        },
+        {
+          $replaceRoot: { newRoot: '$fullIncident' }
+        }
+      ]);
+      return incidents[0] || null;
+    } catch (err) {
+      console.error('Error in findOpenIncidentByReporter:', err.message);
+      return null;
     }
   }
 }

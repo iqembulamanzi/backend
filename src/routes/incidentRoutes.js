@@ -12,4 +12,7 @@ router.get('/', auth, incidentController.getIncidents);
 // Update incident (protected)
 router.put('/:id', auth, incidentController.updateIncident);
 
+// Verify incident (protected, Guardian/Admin)
+router.put('/verify/:id', auth, incidentController.verifyIncident);
+
 module.exports = router;

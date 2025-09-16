@@ -69,7 +69,7 @@ class UserValidator {
     const emailError = this._validateEmail(body.email);
     if (emailError) errors.push(emailError);
 
-    let passwordMin = 6; // Default
+    let passwordMin = 3; // Default
     let phoneError = null;
 
     switch (context) {

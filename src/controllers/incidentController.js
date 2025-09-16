@@ -6,7 +6,7 @@ const incidentService = new IncidentService();
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 // Handle WhatsApp webhook
-const handleWebhook = (req, res) => {
+const handleWebhook = async (req, res) => {
   // Twilio validation
   const bodyStr = req.body.toString();
   const signature = req.headers['x-twilio-signature'] || req.get('X-Twilio-Signature');
@@ -55,27 +55,30 @@ const handleWebhook = (req, res) => {
     mediaUrls: mediaUrl ? [mediaUrl] : []
   };
 
-  // Create incident
-  incidentService.createIncident(incidentData)
-    .then(incident => {
-      console.log('Incident created:', incident._id);
+  try {
+    const { incident, isNew } = await incidentService.createIncident(incidentData);
+    console.log('Incident processed:', incident._id, 'Is new:', isNew);
 
-      // Reply to user
-      const responseMessage = `Thank you for your report. We've created an incident with ID: ${incident._id}. Priority: ${incident.priority}. A Guardian will verify soon.${validationNote}`;
+    // Reply to user
+    let responseMessage;
+    if (isNew) {
+      responseMessage = `Thank you for your report. We've created a new incident with ID: ${incident._id}. Priority: ${incident.priority}. A Guardian will verify soon.${validationNote}`;
+    } else {
+      responseMessage = `Thank you! Your report has been added to an existing incident (ID: ${incident._id}). Priority: ${incident.priority}. A Guardian will verify soon.${validationNote}`;
+    }
 
-      const twiml = new twilio.twiml.MessagingResponse();
-      twiml.message(responseMessage);
+    const twiml = new twilio.twiml.MessagingResponse();
+    twiml.message(responseMessage);
 
-      res.type('text/xml');
-      res.send(twiml.toString());
-    })
-    .catch(err => {
-      console.error('Error creating incident:', err);
-      const twiml = new twilio.twiml.MessagingResponse();
-      twiml.message('Sorry, there was an error processing your report. Please try again.');
-      res.type('text/xml');
-      res.send(twiml.toString());
-    });
+    res.type('text/xml');
+    res.send(twiml.toString());
+  } catch (err) {
+    console.error('Error creating incident:', err);
+    const twiml = new twilio.twiml.MessagingResponse();
+    twiml.message('Sorry, there was an error processing your report. Please try again.');
+    res.type('text/xml');
+    res.send(twiml.toString());
+  }
 };
 
  // Get incidents (protected)
@@ -105,4 +108,49 @@ const updateIncident = async (req, res) => {
   }
 };
 
-module.exports = { handleWebhook, getIncidents, updateIncident };
+// Verify incident (Guardian/Admin only)
+const verifyIncident = async (req, res) => {
+  try {
+    // Check role
+    if (req.user.role !== 'Guardian' && req.user.role !== 'Admin') {
+      return res.status(403).json({ success: false, message: 'Only Guardians or Admins can verify incidents' });
+    }
+
+    const { id } = req.params;
+    const { lat, lng, description } = req.body;  // Precise coordinates from Guardian
+
+    const incident = await Incident.findById(id);
+    if (!incident) {
+      return res.status(404).json({ success: false, message: 'Incident not found' });
+    }
+
+    if (incident.status === 'verified') {
+      return res.status(400).json({ success: false, message: 'Incident already verified' });
+    }
+
+    // Update with precise location and verification
+    incident.status = 'verified';
+    incident.verifiedBy = req.user._id;
+    if (lat && lng) {
+      incident.location = { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] };
+    }
+    if (description) {
+      incident.description = description;  // Override with verified details
+    }
+    incident.updatedAt = new Date();
+
+    const savedIncident = await incident.save();
+    console.log('Incident verified:', savedIncident._id);
+
+    // Send notification to all reporters
+    const notificationService = new NotificationService();
+    await notificationService.notifyVerification(savedIncident._id);
+
+    res.status(200).json({ success: true, incident: savedIncident });
+  } catch (err) {
+    console.error('Error verifying incident:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { handleWebhook, getIncidents, updateIncident, verifyIncident };
