@@ -49,22 +49,18 @@ app.post('/whatsapp', async (req, res) => {
 
     if (hasLocation && !isNaN(latitude) && !isNaN(longitude)) {
       console.log('Processing location share for phone:', reporterPhone);
-      const openIncidents = await incidentService.getIncidents({
-        reporterPhone,
-        status: 'open'
-      });
+      const openIncident = await incidentService.findOpenIncidentByReporter(reporterPhone);
       
-      if (openIncidents.length > 0) {
-        const latestIncident = openIncidents[0]; // Already sorted by createdAt: -1
-        await incidentService.updateIncident(latestIncident._id, {
+      if (openIncident) {
+        await incidentService.updateIncident(openIncident._id, {
           location: { type: 'Point', coordinates: [longitude, latitude] }
         });
-        console.log('Updated location for existing incident:', latestIncident._id);
+        console.log('Updated location for existing incident:', openIncident._id);
         twiml = new MessagingResponse();
-        twiml.message('Location updated for your recent incident report!');
+        twiml.message('Location updated for your incident report!');
       } else {
         // Create incident with location if no open one
-        await incidentService.createIncident({
+        const { incident: savedIncident, isNew } = await incidentService.createIncident({
           description: body.trim() || 'User shared location without prior description',
           reporterPhone,
           category: 'other',
@@ -72,18 +68,18 @@ app.post('/whatsapp', async (req, res) => {
         });
         console.log('Created new incident with location for phone:', reporterPhone);
         twiml = new MessagingResponse();
-        twiml.message('Thanks for sharing your location! An incident has been created. Please send a description for more details.');
+        twiml.message(`Thanks for sharing your location! ${isNew ? 'An incident has been created (ID: ${savedIncident._id}).' : 'Added to existing incident (ID: ${savedIncident._id}).'} Please send a description for more details.`);
       }
     } else if (body.trim()) {
       console.log('Processing text message for phone:', reporterPhone);
-      await incidentService.createIncident({
+      const { incident: savedIncident, isNew } = await incidentService.createIncident({
         description: body.trim(),
         reporterPhone,
         category: 'other',
         location: { type: 'Point', coordinates: [0, 0] }
       });
       twiml = new MessagingResponse();
-      twiml.message('Incident reported and saved! To add your location, tap the attachment icon and select "Location".');
+      twiml.message(isNew ? `Incident reported and saved (ID: ${savedIncident._id})! To add your location, tap the attachment icon and select "Location".` : `Your report added to existing incident (ID: ${savedIncident._id})! To add location, tap the attachment icon.`);
     } else {
       twiml = new MessagingResponse();
       twiml.message('Hello! To report an incident, send a description of the problem. You can also share your location anytime.');
