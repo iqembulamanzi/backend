@@ -2,7 +2,7 @@
 
 ## Overview
 
-iqembulamanzi (meaning "clean water" in isiZulu) is a community-powered platform inspired by the SewerWatch SA project, designed to monitor and address sewer manhole failures and overflows in South African municipalities. It empowers citizens to report incidents easily via web forms (with future WhatsApp integration), verifies them through designated community guardians, and ensures municipal accountability with transparent tracking. The system prevents environmental pollution, protects public health, and optimizes resource allocation by capturing incident locations, sending automated notifications, and providing data-driven insights.
+iqembulamanzi (meaning "team water" in isiZulu) is a community-powered platform inspired by the SewerWatch SA project, designed to monitor and address sewer manhole failures and overflows in South African municipalities. It empowers citizens to report incidents easily via web forms (with future WhatsApp integration), verifies them through designated community guardians, and ensures municipal accountability with transparent tracking. The system prevents environmental pollution, protects public health, and optimizes resource allocation by capturing incident locations, sending automated notifications, and providing data-driven insights.
 
 Built on Node.js and Express, the current implementation includes foundational user management (registration/login for citizens and guardians), incident reporting with location capture, and an automated notification feature that alerts guardians via Twilio (integrated with WhatsApp Business API) to verify incidents on-site. This fulfills the core automated feature: capturing incident locations and notifying guardians for real-time verification, all via Twilio.
 
