@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register User</title>
+</head>
+<body>
+    <h1>Register User</h1>
+    <form id="userForm">
+        First Name: <input type="text" name="first_name" required><br>
+        Last Name: <input type="text" name="last_name" required><br>
+        Email: <input type="email" name="email" required><br>
+        Phone: <input type="tel" name="phone" required><br>
+        Password: <input type="password" name="password" required><br>
+        Role: <select name="role">
+            <option value="Guardian" selected>Guardian</option>
+            <option value="Manager">Manager</option>
+            <option value="Admin">Admin</option>
+        </select><br>
+        <input type="submit" value="Submit">
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const text = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (parseErr) {
+                    throw new Error('Invalid response from server');
+                }
+
+                const message = document.getElementById('message');
+                if (result.success) {
+                    e.target.reset();
+                    message.innerHTML = `<p style="color: green;">${result.message}</p>`;
+                } else {
+                    message.innerHTML = `<p style="color: red;">${result.message || 'Unknown error occurred'}</p>`;
+                }
+                message.style.display = 'block';
+            } catch (error) {
+                const message = document.getElementById('message');
+                message.innerHTML = `<p style="color: red;">Error: ${error.message}. Please check if the server is running.</p>`;
+                message.style.display = 'block';
+                console.error('Form submission error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
