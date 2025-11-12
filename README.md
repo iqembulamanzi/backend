@@ -1,229 +1,262 @@
-# iqembulamanzi
+# iqembulamanzi - Citizen Incident Reporting System
+
+![GitHub last commit](https://img.shields.io/github/last-commit/iqembulamanzi/backend)
+![GitHub repo size](https://img.shields.io/github/repo-size/iqembulamanzi/backend)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Overview
 
-HEAD
-iqembulamanzi (meaning "team water" in isiZulu) is a community-powered platform inspired by the SewerWatch SA project, designed to monitor and address sewer manhole failures and overflows in South African municipalities. It empowers citizens to report incidents easily via web forms (with future WhatsApp integration), verifies them through designated community guardians, and ensures municipal accountability with transparent tracking. The system prevents environmental pollution, protects public health, and optimizes resource allocation by capturing incident locations, sending automated notifications, and providing data-driven insights.
+**iqembulamanzi** (meaning "team water" in isiZulu) is a community-powered platform designed to monitor and address sewer manhole failures and overflows in South African municipalities. The system empowers citizens to report incidents, facilitates verification through municipal managers and admins, and ensures accountability with transparent tracking.
 
-Built on Node.js and Express, the current implementation includes foundational user management (registration/login for citizens and guardians), incident reporting with location capture, and an automated notification feature that alerts guardians via Twilio (integrated with WhatsApp Business API) to verify incidents on-site. This fulfills the core automated feature: capturing incident locations and notifying guardians for real-time verification, all via Twilio.
-=======
-iqembulamanzi (meaning "team water" in isiZulu) is a community-powered platform inspired by the SewerWatch SA project, designed to monitor and address sewer manhole failures and overflows in South African municipalities. It empowers citizens to report incidents easily via web forms and WhatsApp, verifies them through municipal managers and admins, and ensures accountability with transparent tracking. The system prevents environmental pollution, protects public health, and optimizes resource allocation by capturing incident locations, sending automated notifications to group members, and providing data-driven insights.
+The platform prevents environmental pollution, protects public health, and optimizes resource allocation by capturing incident locations, sending automated notifications, and providing data-driven insights for municipal management.
 
-Built on Node.js and Express, the current implementation includes foundational user management (registration/login for citizens, managers, and admins), incident reporting with location capture and image validation, and an automated notification feature that broadcasts alerts to group members via Twilio (integrated with WhatsApp Business API) for awareness and verification. This fulfills the core automated feature: capturing incident locations and notifying group members for real-time awareness and follow-up, all via Twilio.
->>>>>>> jobcard
+## 🌟 Key Features
 
-The project addresses key issues: lack of proactive monitoring, inefficient reporting, opaque resolution processes, and data gaps in sewage loss. Stakeholders include communities (especially townships), environment, municipalities, and water treatment plants.
+### Core Functionality
+- **User Management**: Secure registration and login for citizens, managers, and admins using JWT authentication
+- **Team Management**: Maintenance teams with members, leaders, and specialized roles for different types of infrastructure work
+- **Incident Reporting**: Citizens submit reports with location (lat/long), images, and details via web forms
+- **Group Notification**: Automated Twilio/WhatsApp Business API notifications to group members for awareness and verification
+- **Incident Tracking**: Complete CRUD operations with status updates (open, in_progress, verified, allocated, closed)
+- **Job-Card Allocation**: Complete workflow from incident detection through team assignment to resolution tracking
 
-## Problem Statement
+### Advanced Features
+- **ML Image Validation**: TensorFlow/Keras integration for sewage detection and incident validation
+- **Real-time Progress Tracking**: Teams update job-card status via mobile API with geolocation support
+- **Multi-channel Reporting**: Support for web forms and WhatsApp integration
+- **Geospatial Operations**: Location-based queries and operations using MongoDB geospatial features
 
-Sewer overflows lead to untreated sewage polluting rivers, causing health risks and environmental damage. Root causes:
-- No systematic monitoring of manholes.
-- Inefficient, untracked citizen reporting.
-- Lack of accountability from report to resolution.
-- Unmeasured sewage losses impacting planning.
-
-Vision: A simple, accountable pathway from detection to resolution, starting with web-based reporting and evolving to AI-enhanced, multi-channel (WhatsApp/USSD) systems.
-
-## Core Features
-
-<<<<<<< HEAD
-1. **User Management**: Secure registration and login for citizens, guardians, and officials using JWT authentication.
-2. **Incident Reporting**: Citizens submit reports with location (lat/long) and details via `/user_form.html`; stored in MongoDB.
-3. **Guardian Notification**: Automated feature captures incident location and sends instant notifications to designated guardians via Twilio/WhatsApp Business API, prompting on-site verification (e.g., "Verify if incident at [location] is real").
-4. **Incident Tracking**: CRUD operations for incidents; status updates (reported, verified, resolved).
-5. **Verification Workflow**: Guardians confirm authenticity, add photos/context; escalates to municipalities if needed.
-6. **Basic Dashboard**: Static pages for user/incident lists; future React.js municipal portal with maps and analytics.
-
-Recent Addition: The guardian notification feature enables real-time alerts, ensuring swift verification and closing the accountability loop.
-
-Future Enhancements (Roadmap Phases):
-- Phase 1 (Current): Core reporting, user auth, Twilio notifications.
-- Phase 2: AI/ML triage (categorization, prioritization), multi-language NLP.
-- Phase 3: Public dashboard (D3.js visualizations), environmental impact metrics (sewage loss calculations).
-- Phase 4: Mobile app, fraud detection, multi-municipal scaling.
-=======
-1. **User Management**: Secure registration and login for citizens, managers, and admins using JWT authentication.
-2. **Team Management**: Maintenance teams with members, leaders, and specialized roles for different types of sewage infrastructure work.
-3. **Incident Reporting**: Citizens submit reports with location (lat/long), images, and details via web forms or WhatsApp; stored in MongoDB with ML-based image validation.
-4. **Group Notification**: Automated feature captures incident location and broadcasts instant notifications to group members via Twilio/WhatsApp Business API, enabling awareness and follow-up (e.g., "New incident reported at [location]").
-5. **Incident Tracking**: CRUD operations for incidents; status updates (open, in_progress, verified, allocated, closed).
-6. **Job-Card Allocation**: Clerks allocate verified incidents to maintenance teams, creating trackable job-cards with geolocation and priority.
-7. **Verification Workflow**: Managers/Admins verify incidents on-site, update status and details; reporters are notified of verification and expected resolution timeline.
-8. **Real-time Progress Tracking**: Teams update job-card status via mobile API; managers monitor progress in real-time.
-9. **Basic Dashboard**: Static pages for user/incident/job-card lists; future React.js municipal portal with maps and analytics.
-
-Recent Additions: Job-card allocation system enables complete workflow from incident detection through team assignment to resolution tracking. Teams can receive job-cards via mobile API and update progress with geolocation support.
-
-Future Enhancements (Roadmap Phases):
-- Phase 1 (Current): Core reporting, user auth, Twilio notifications, team management, job-card allocation.
-- Phase 2: AI/ML triage (categorization, prioritization), multi-language NLP, mobile team app.
-- Phase 3: Public dashboard (D3.js visualizations), environmental impact metrics (sewage loss calculations), real-time WebSocket updates.
-- Phase 4: Advanced analytics, fraud detection, multi-municipal scaling, predictive maintenance.
->>>>>>> jobcard
-
-## Technologies Used
+## 🛠️ Technology Stack
 
 - **Backend**: Node.js, Express.js
-<<<<<<< HEAD
-- **Database**: MongoDB with Mongoose (for users, incidents with geospatial data)
+- **Database**: MongoDB with Mongoose (geospatial data support)
 - **Authentication**: JWT, bcryptjs
 - **Notifications**: Twilio (WhatsApp Business API, SMS fallback)
-- **Frontend**: Static HTML/CSS/JS (public/); future React.js
-- **Validation & Utils**: Custom validators, axios, body-parser, dotenv
-- **Other**: PostGIS potential for advanced location queries
-=======
-- **Database**: MongoDB with Mongoose (for users, incidents, teams, job-cards with geospatial data)
-- **Authentication**: JWT, bcryptjs
-- **Notifications**: Twilio (WhatsApp Business API, SMS fallback)
-- **Machine Learning**: TensorFlow/Keras for image classification (sewage detection)
-- **Team Management**: Job-card allocation system with real-time status tracking
-- **Frontend**: Static HTML/CSS/JS (public/); future React.js
-- **Validation & Utils**: Custom validators, axios, body-parser, dotenv
+- **Machine Learning**: TensorFlow/Keras for image classification
+- **Frontend**: Static HTML/CSS/JS with future React.js integration
 - **Geocoding**: OpenStreetMap Nominatim API
-- **Other**: Python subprocess for ML inference, geospatial queries for location-based operations
->>>>>>> jobcard
+- **Validation**: Custom validators with comprehensive error handling
 
-## Installation
+## 📁 Project Structure
 
-1. Clone the repository: `git clone https://github.com/iqembulamanzi/backend.git` and `cd backend`.
-2. Install dependencies: `npm install`.
-3. Set up `.env` file:
+```
+├── app.js                    # Express application configuration
+├── server.js                 # Application entry point
+├── package.json              # Project dependencies and scripts
+├── .env                      # Environment variables (excluded from git)
+├── .env.example              # Environment template
+├── .gitignore               # Git ignore patterns
+├── config/
+│   └── db.js                # MongoDB connection configuration
+├── public/                   # Static frontend files
+│   ├── login.html           # User authentication page
+│   ├── user_form.html       # Incident reporting form
+│   └── users.html           # User management interface
+├── src/
+│   ├── controllers/         # Request handlers
+│   │   ├── incidentController.js    # Incident management logic
+│   │   ├── jobCardController.js     # Job-card allocation system
+│   │   └── userController.js        # User management operations
+│   ├── middleware/
+│   │   └── auth.js          # JWT authentication middleware
+│   ├── models/              # Data models
+│   │   ├── Incident.js      # Incident records with geospatial data
+│   │   ├── JobCard.js       # Job-card assignments and tracking
+│   │   ├── Team.js          # Maintenance teams structure
+│   │   └── User.js          # User accounts with role-based access
+│   ├── routes/              # API endpoint definitions
+│   │   ├── incidentRoutes.js    # Incident management endpoints
+│   │   ├── jobCardRoutes.js     # Job-card system endpoints
+│   │   └── userRoutes.js        # User management endpoints
+│   ├── services/            # Business logic services
+│   │   ├── imageAnalysisService.js  # ML image validation
+│   │   ├── incidentService.js      # Incident processing logic
+│   │   ├── jobCardService.js       # Job-card management
+│   │   └── userService.js          # User operations
+│   └── validators/
+│       └── userValidator.js    # Input validation logic
+└── docs/                    # Documentation files
+```
+
+## 🚀 Installation & Setup
+
+### Prerequisites
+- Node.js (v14 or higher)
+- MongoDB (v4.4 or higher)
+- Git
+
+### Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/iqembulamanzi/backend.git
+   cd backend
    ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Environment Configuration**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Update `.env` with your configuration:
+   ```env
    MONGODB_URI=mongodb://localhost:27017/iqembulamanzi
-   JWT_SECRET=your_strong_secret_key
+   JWT_SECRET=your_strong_secret_key_here
    TWILIO_ACCOUNT_SID=your_twilio_account_sid
    TWILIO_AUTH_TOKEN=your_twilio_auth_token
-<<<<<<< HEAD
-   TWILIO_PHONE_NUMBER=whatsapp:+your_twilio_whatsapp_number
-   PORT=3000
-=======
    TWILIO_WHATSAPP_FROM=whatsapp:+your_twilio_whatsapp_number
    PORT=2000
->>>>>>> jobcard
    ```
-4. Ensure MongoDB is running (e.g., `mongod`).
-5. Start the server: `npm start` or `node server.js`.
 
-## Usage
+4. **Start MongoDB**
+   ```bash
+   mongod
+   ```
 
-1. Run the server (see Installation).
-<<<<<<< HEAD
-2. Access via browser: `http://localhost:3000`.
-3. Key Pages/Routes:
-   - `/login.html`: User login.
-   - `/user_form.html`: Register or report incident (include location).
-   - `/users.html`: List users (authenticated).
-   - API: POST `/api/incidents` (report with location → triggers guardian notification).
-4. Workflow Example:
-   - Citizen registers/logs in, reports incident.
-   - System captures location, saves to DB.
-   - Automated Twilio notification sent to guardian: "Incident reported at [lat,long]. Please verify."
-   - Guardian verifies/updates via app (future: WhatsApp reply).
-   - Status tracked for resolution.
+5. **Run the application**
+   ```bash
+   npm start
+   # or
+   node server.js
+   ```
 
-Test Notifications: Ensure Twilio creds in `.env`; reports will send WhatsApp messages.
-=======
-2. Access via browser: `http://localhost:2000`.
-3. Key Pages/Routes:
-   - `/login.html`: User login.
-   - `/user_form.html`: Register or report incident (include location and image).
-   - `/users.html`: List users (authenticated).
-   - WhatsApp: Send messages to Twilio number for incident reporting.
-   - API Endpoints:
-     - `POST /api/incidents` (report with location → triggers group notification)
-     - `POST /api/job-cards/allocate` (allocate verified incidents to teams)
-     - `GET /api/job-cards/team/:teamId` (teams receive assigned job-cards)
-     - `PUT /api/job-cards/:id/status` (update job-card progress)
-4. Complete Workflow Example:
-   - Citizen registers/logs in, reports incident with image and location.
-   - System validates image using ML, saves to DB with priority triage.
-   - Automated Twilio notification broadcast to group members: "New incident reported at [location]".
-   - Manager/Admin verifies incident on-site, updates status to 'verified'.
-   - Clerk allocates verified incident to appropriate maintenance team, creating job-card.
-   - Team receives job-card via mobile API with geolocation for navigation.
-   - Team updates status as they work: assigned → in_progress → completed.
-   - Manager monitors progress in real-time via dashboard.
-   - Reporters notified of verification and resolution timeline.
+## 📱 Usage Guide
 
-Test Notifications: Ensure Twilio creds in `.env`; reports will send WhatsApp messages to group members.
-Test Job-Cards: Create teams and users through the API or database for testing allocation workflow.
->>>>>>> jobcard
+### Access Points
+- **Web Interface**: `http://localhost:2000`
+- **Login Page**: `/login.html`
+- **Incident Reporting**: `/user_form.html`
+- **User Management**: `/users.html` (authenticated users only)
 
-## Project Structure
+### API Endpoints
 
-```
-.
-├── app.js              # Express app config (middleware, routes)
-├── server.js           # Entry point (connects DB, starts server)
-├── package.json        # Scripts, deps (name: "iqembulamanzi")
-├── .env                # Secrets (gitignore)
-├── config/
-│   └── db.js           # MongoDB connection
-├── public/             # Static assets
-│   ├── login.html
-│   ├── user_form.html  # Incident report form
-│   └── users.html
-├── src/
-│   ├── controllers/
-│   │   ├── userController.js
-<<<<<<< HEAD
-│   │   └── incidentController.js  # Handles reports, notifications
-│   ├── middleware/
-│   │   └── auth.js     # JWT auth
-│   ├── models/
-│   │   ├── User.js     # Users (citizen/guardian roles)
-│   │   └── Incident.js # Incidents (location, status)
-│   ├── routes/
-│   │   ├── userRoutes.js
-│   │   └── incidentRoutes.js
-│   ├── services/
-│   │   ├── userService.js
-│   │   └── incidentService.js  # Notification logic via Twilio
-│   └── validators/
-│       └── userValidator.js
-=======
-│   │   ├── incidentController.js  # Handles reports, notifications
-│   │   └── jobCardController.js   # Job-card allocation and tracking
-│   ├── middleware/
-│   │   └── auth.js     # JWT auth
-│   ├── models/
-│   │   ├── User.js        # Users (citizen/manager/admin roles)
-│   │   ├── Incident.js    # Incidents (location, status, reporters)
-│   │   ├── GroupMember.js # Notification group members
-│   │   ├── Team.js        # Maintenance teams with members/leaders
-│   │   └── JobCard.js     # Job-cards linking incidents to teams
-│   ├── routes/
-│   │   ├── userRoutes.js
-│   │   ├── incidentRoutes.js
-│   │   └── jobCardRoutes.js # Job-card API endpoints
-│   ├── services/
-│   │   ├── userService.js
-│   │   ├── incidentService.js     # Incident logic and geocoding
-│   │   ├── notificationService.js # WhatsApp notifications
-│   │   ├── imageAnalysisService.js # ML image validation
-│   │   └── jobCardService.js      # Job-card business logic
-│   └── validators/
-│       └── userValidator.js
-├── docs/
-│   └── api.md          # Complete API documentation
->>>>>>> jobcard
-```
+#### User Management
+- `POST /api/users/register` - Register new user
+- `POST /api/users/login` - User authentication
+- `GET /api/users` - List all users (admin only)
 
-## Running Tests
+#### Incident Management
+- `POST /api/incidents` - Report new incident
+- `GET /api/incidents` - List incidents
+- `PUT /api/incidents/:id` - Update incident status
+- `DELETE /api/incidents/:id` - Remove incident
 
-No tests implemented. Add Jest: `npm install --save-dev jest`, then `npm test`.
+#### Job-Card System
+- `POST /api/job-cards/allocate` - Allocate incident to team
+- `GET /api/job-cards/team/:teamId` - Get team assignments
+- `PUT /api/job-cards/:id/status` - Update job-card progress
 
-## Contributing
+### Workflow Example
 
-1. Fork and clone.
-2. Create feature branch: `git checkout -b feat/your-feature`.
-3. Commit: `git commit -m "feat: description"`.
-4. Push and PR to `main`.
+1. **Citizen Reporting**
+   - User registers/logs in
+   - Reports incident with image and location via web form
+   - System validates image using ML and saves to database
 
-Focus on modularity, error handling, and SA context (e.g., offline support).
+2. **Notification & Verification**
+   - Automated WhatsApp notification sent to group members
+   - Manager/Admin verifies incident on-site
+   - Status updated to 'verified'
 
-## License
+3. **Job-Card Allocation**
+   - Clerk allocates verified incident to maintenance team
+   - Job-card created with geolocation for navigation
+   - Team receives assignment via mobile API
 
-MIT License
+4. **Progress Tracking**
+   - Team updates status: assigned → in_progress → completed
+   - Manager monitors progress in real-time
+   - Reporters notified of verification and resolution timeline
 
-For full project vision, see the [SewerWatch SA Project Definition](path/to/doc.md) (KPIs, risks, architecture).
+## 🔧 Development
+
+### Testing Notifications
+- Ensure Twilio credentials are configured in `.env`
+- Report incidents to test WhatsApp group notifications
+
+### Job-Card Testing
+- Create teams and users through API or database
+- Test allocation workflow with realistic scenarios
+
+### ML Image Validation
+- ML models are stored in `ml/models/` directory
+- Image analysis service validates incident authenticity
+- Supports various image formats for sewage detection
+
+## 🛡️ Security Features
+
+- JWT-based authentication with secure token management
+- Role-based access control (citizen, manager, admin)
+- Input validation and sanitization
+- Password hashing with bcrypt
+- CORS configuration for API security
+
+## 📈 Roadmap
+
+### Phase 1 (Current)
+- ✅ Core reporting functionality
+- ✅ User authentication system
+- ✅ Twilio WhatsApp notifications
+- ✅ Team management system
+- ✅ Job-card allocation workflow
+
+### Phase 2 (Planned)
+- AI/ML triage and categorization
+- Multi-language NLP support
+- Mobile team application
+- Enhanced geolocation features
+
+### Phase 3 (Future)
+- Public dashboard with D3.js visualizations
+- Environmental impact metrics
+- Real-time WebSocket updates
+- Advanced analytics
+
+### Phase 4 (Long-term)
+- Advanced fraud detection
+- Multi-municipal scaling
+- Predictive maintenance algorithms
+- IoT sensor integration
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Commit your changes: `git commit -m 'feat: add new feature'`
+4. Push to the branch: `git push origin feat/your-feature`
+5. Submit a pull request
+
+### Development Guidelines
+- Follow existing code style and conventions
+- Add appropriate error handling
+- Include documentation for new features
+- Ensure responsive design for mobile compatibility
+- Consider South African context and offline support needs
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🌐 Contact & Support
+
+- **Repository**: [https://github.com/iqembulamanzi/backend](https://github.com/iqembulamanzi/backend)
+- **Issues**: Use GitHub Issues for bug reports and feature requests
+- **Documentation**: Check the `/docs` folder for detailed API documentation
+
+## 🙏 Acknowledgments
+
+- Inspired by the SewerWatch SA project
+- Built for South African municipalities
+- Community-driven development approach
+- Focus on environmental protection and public health
+
+---
+
+**Made with ❤️ for cleaner, safer communities in South Africa**
